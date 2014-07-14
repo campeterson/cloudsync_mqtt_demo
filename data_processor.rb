@@ -15,22 +15,6 @@ conn_opts = {
   password: uri.password,
 }
 
-#SIGNAL_QUEUE = []
-#[:INT, :QUIT, :TERM].each do |signal|
-  #Signal.trap(signal) {
-    #SIGNAL_QUEUE << signal
-  #}
-#end
-#case SIGNAL_QUEUE.pop
-#when :INT
-  #break
-#when :QUIT
-  #break
-#when :TERM
-  #break
-#else
-#end
-
 MQTT::Client.connect(conn_opts) do |c|
   # The block will be called when messages arrive to the topic
   c.get(data_topic) do |topic, message|
