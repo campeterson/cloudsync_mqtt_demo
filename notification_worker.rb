@@ -27,12 +27,28 @@ def generate_message(account_id)
   return topic, message
 end
 
+SIGNAL_QUEUE = []
+[:INT, :QUIT, :TERM].each do |signal|
+  Signal.trap(signal) {
+    SIGNAL_QUEUE << signal
+  }
+end
+
 MQTT::Client.connect(conn_opts) do |c|
   loop do
-    # Choose who to send to
-    topic, message = generate_message(account_id)
-    c.publish(topic, message)
-    puts "Sent message: #{message} to #{topic}"
-    sleep 1
+    case SIGNAL_QUEUE.pop
+    when :INT
+      break
+    when :QUIT
+      break
+    when :TERM
+      break
+    else
+      # Choose who to send to
+      topic, message = generate_message(account_id)
+      c.publish(topic, message)
+      puts "Sent message: #{message} to #{topic}"
+      sleep 1
+    end
   end
 end

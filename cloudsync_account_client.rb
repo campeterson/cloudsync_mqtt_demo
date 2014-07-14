@@ -4,7 +4,12 @@ require 'uri'
 # CloudMQTT URL is passed as an arg
 
 ENV['CLOUDMQTT_URL'] = ARGV[0]
-data_topic = "account/+/licenses/+/data"
+account_id = ARGV[1]
+license_id = ARGV[2]
+
+account_topic = "accounts/#{account_id}"
+license_topic = "accounts/#{account_id}/licenses/#{license_id}"
+data_topic = "account/#{account_id}/licenses/#{license_id}/data"
 
 # Create a hash with the connection parameters from the URL
 uri = URI.parse ENV['CLOUDMQTT_URL'] || 'mqtt://localhost:1883'
@@ -15,25 +20,9 @@ conn_opts = {
   password: uri.password,
 }
 
-#SIGNAL_QUEUE = []
-#[:INT, :QUIT, :TERM].each do |signal|
-  #Signal.trap(signal) {
-    #SIGNAL_QUEUE << signal
-  #}
-#end
-#case SIGNAL_QUEUE.pop
-#when :INT
-  #break
-#when :QUIT
-  #break
-#when :TERM
-  #break
-#else
-#end
-
 MQTT::Client.connect(conn_opts) do |c|
   # The block will be called when messages arrive to the topic
-  c.get(data_topic) do |topic, message|
+  c.get(account_topic) do |topic, message|
     puts "#{topic}: #{message}"
   end
 end

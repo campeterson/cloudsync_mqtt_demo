@@ -20,32 +20,28 @@ conn_opts = {
   password: uri.password,
 }
 
-# Subscribe to Account Topic
-Thread.new do
-  MQTT::Client.connect(conn_opts) do |c|
-    # The block will be called when messages arrive to the topic
-    c.get(account_topic) do |topic, message|
-      puts "#{topic}: #{message}"
-    end
-  end
-end
-
-# Subscribe to License Topic
-Thread.new do
-  MQTT::Client.connect(conn_opts) do |c|
-    # The block will be called when messages arrive to the topic
-    c.get(license_topic) do |topic, message|
-      puts "#{topic}: #{message}"
-    end
-  end
+SIGNAL_QUEUE = []
+[:INT, :QUIT, :TERM].each do |signal|
+  Signal.trap(signal) {
+    SIGNAL_QUEUE << signal
+  }
 end
 
 MQTT::Client.connect(conn_opts) do |c|
   # publish a message to the topic 'test'
   loop do
-    message = ["PrintJob", "CutJob", "OpenFile", "CreateIcc"].sample
-    c.publish(data_topic, message)
-    #puts message
-    sleep 1
+    case SIGNAL_QUEUE.pop
+    when :INT
+      break
+    when :QUIT
+      break
+    when :TERM
+      break
+    else
+      message = ["PrintJob", "CutJob", "OpenFile", "CreateIcc"].sample
+      c.publish(data_topic, message)
+      puts "Sending data --- #{message}"
+      sleep 1
+    end
   end
 end
